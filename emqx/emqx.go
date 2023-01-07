@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -19,7 +20,7 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	fmt.Printf("Connect lost: %v", err)
 }
 
-const topic = "qinlaoda_iot"
+const topic = "Dorm/Hum"
 
 func main() {
 	var broker = "120.78.88.87"
@@ -27,8 +28,8 @@ func main() {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
 	opts.SetClientID("go_mqtt_client")
-	opts.SetUsername("emqx")
-	opts.SetPassword("public")
+	opts.SetUsername("Dorm/Hum")
+	opts.SetPassword("Dorm/Hum")
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
@@ -38,20 +39,23 @@ func main() {
 	}
 
 	sub(client)
-	publish(client)
+	//publish(client)
 	for {
-
+		publish(client)
 	}
 
 }
 
 func publish(client mqtt.Client) {
 	num := 10
+	min := 75
+	max := 99
+	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < num; i++ {
-		text := fmt.Sprintf("消息 %d", i)
+		text := fmt.Sprintf("%d.%d", rand.Intn(max-min)+min, rand.Intn(9))
 		token := client.Publish(topic, 0, false, text)
 		token.Wait()
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 3)
 	}
 }
 
